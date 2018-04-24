@@ -51,10 +51,20 @@
         android:id="@+id/btnBlueTooth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="148dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="12dp"
         android:text="Button"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgWhether" />
+
+    <Button
+        android:id="@+id/btnRecog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="88dp"
+        android:layout_marginTop="12dp"
+        android:text="Recog"
+        app:layout_constraintStart_toEndOf="@+id/btnBlueTooth"
         app:layout_constraintTop_toBottomOf="@+id/imgWhether" />
 
 </android.support.constraint.ConstraintLayout>
