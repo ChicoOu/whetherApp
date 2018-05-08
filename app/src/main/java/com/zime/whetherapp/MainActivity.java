@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,7 +54,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnTouchListener, View.OnLongClickListener{
     private static final String RAINING_URL = "https://thumbs.dreamstime.com/t/%E5%8A%A8-%E7%89%87%E4%BA%91%E5%BD%A9%E4%B8%8B%E9%9B%A8-57765254.jpg";
 
     private static final String SUNNY_URL = "http://reso2.yiihuu.com/779225-z.jpg";
@@ -235,6 +236,10 @@ public class MainActivity extends AppCompatActivity {
         initPermission();
         initialTts();
         initRecog();
+
+        txtViewPage.setOnTouchListener(this);
+        txtViewPage.setLongClickable(true);
+        txtViewPage.setOnLongClickListener(this);
     }
 
     /**
@@ -539,5 +544,17 @@ public class MainActivity extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        speak("别碰我！");
+        return true;
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        speak("别老碰我！");
+        return true;
     }
 }
