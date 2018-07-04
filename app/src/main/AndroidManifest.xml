@@ -46,6 +46,9 @@
         <activity android:name=".BluetoothActivity">
 
         </activity>
+        <activity android:name=".ChatActivity">
+
+        </activity>
     </application>
 
 </manifest>

@@ -8,8 +8,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.ParcelUuid;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -21,6 +23,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,9 +53,9 @@ public class ChatActivity extends AppCompatActivity {
 
     private BluetoothDevice bluetoothDevice = null;
 
-    private static final String SERVER_CLIENT_UUID = "cda3eba5-b683-4148-8e16-ad5c1fa89ed7";
+    private static final String SERVER_CLIENT_UUID = "00001101-0000-1000-8000-00805f9b34fb";
 
-    private static final String SERVER_NAME = "bleApp";
+    private static final String SERVER_NAME = "HC-05";
 
     private ServerThread serverThread;
 
@@ -137,7 +140,7 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onPostResume() {
         // 如果你作为服务器，请加下面一行
-        BluetoothUtil.isServer = true;
+        BluetoothUtil.isServer = false;
 
         if( BluetoothUtil.isOpen ){
             Toast.makeText(this, "连接已经打开，可以直接通信。如需重连，请先断开连接！", Toast.LENGTH_SHORT).show();
@@ -164,6 +167,9 @@ public class ChatActivity extends AppCompatActivity {
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
+            String content = (String)msg.obj;
+            // 进行处理，将源源不断过来的content转换为温度、湿度等
+
             msgList.add((String)msg.obj);
             chatMsgAdapter.notifyDataSetChanged();
             lstViewMsgs.setSelection(msgList.size() - 1);
@@ -233,7 +239,28 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                socket = bluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString(SERVER_CLIENT_UUID));
+                String uuid = null;
+                if(bluetoothDevice.fetchUuidsWithSdp()){
+                    ParcelUuid[] uuids = bluetoothDevice.getUuids();
+                    if(uuids != null){
+                        Log.i("ChatActivity", uuids.toString());
+                        socket = bluetoothDevice.createRfcommSocketToServiceRecord(uuids[0].getUuid());
+                    }
+                    else{
+                        socket = bluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString(SERVER_CLIENT_UUID));
+                        Log.e("ChatActivity", "Found no uuids!");
+                    }
+                }
+                if(socket == null) {
+                    try {
+                        Method m = bluetoothDevice.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
+                        socket = (BluetoothSocket) m.invoke(bluetoothDevice, 1);
+                    }
+                    catch (Exception  e){
+                        e.printStackTrace();
+                    }
+//                    socket = bluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString(SERVER_CLIENT_UUID));
+                }
                 // 通知界面，等待客户端连接中
                 Message msg = new Message();
                 msg.obj = "客户端连接服务器中:" + BluetoothUtil.bluetoothAddress;
@@ -241,6 +268,7 @@ public class ChatActivity extends AppCompatActivity {
                 handler.sendMessage(msg);
 
                 socket.connect();
+                msg = new Message();
                 msg.obj = "已经连接上服务器！可以发送消息";
                 msg.what = 0;
                 handler.sendMessage(msg);
@@ -269,6 +297,7 @@ public class ChatActivity extends AppCompatActivity {
                 handler.sendMessage(msg);
 
                 socket = serverSocket.accept();
+                msg = new Message();
                 msg.obj = "客户端已经连接！可以发送消息";
                 msg.what = 0;
                 handler.sendMessage(msg);

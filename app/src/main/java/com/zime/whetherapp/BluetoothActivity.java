@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -84,6 +85,11 @@ public class BluetoothActivity extends AppCompatActivity {
                 dlg.setPositiveButton("连接", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        boolean isCancled = bluetoothAdapter.cancelDiscovery();
+                        if( !isCancled ){
+                            Log.e("BluetoothActivity", "Failed to cancel discovery!");
+                        }
+
                         BluetoothUtil.bluetoothAddress = bluetoothInfo.substring(bluetoothInfo.length() - 17);
                         Intent intent = new Intent(BluetoothActivity.this, ChatActivity.class);
                         BluetoothActivity.this.startActivity(intent);
@@ -207,6 +213,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     deviceList.add("没有蓝牙设备");
                     adapter.notifyDataSetChanged();
                 }
+                Log.i("BluetoothActivity", "Discovery finished!");
                 btnSearch.setText("继续搜索");
             }
         }
